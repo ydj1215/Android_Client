@@ -2,54 +2,92 @@ package com.example.android_client.view;
 
 import android.os.Bundle;
 import android.widget.EditText;
-import android.widget.Toast; // 사용자 화면 위에 살짝 나타났다 사라지는 팝업창
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
-import com.example.android_client.R; // 안드로이드 프로젝트에서 자동으로 생성되는 특별한 자바 클래스로, 앱의 모든 Resource 에 접근 가능한 정적 변수들이 포함되어 있다.
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
+import com.example.android_client.R;
 import com.example.android_client.api.ApiService;
 import com.example.android_client.api.RetrofitClient;
-import android.util.Log;
+import com.example.android_client.model.Memo;
+import com.example.android_client.adapter.MemosAdapter;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import lombok.extern.slf4j.Slf4j;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-// MainActivity 클래스는 AppCompatActivity를 상속받아 안드로이드 앱의 주 화면을 구성
+@Slf4j
 public class MainActivity extends AppCompatActivity {
-    private ApiService apiService;  // API 인터페이스를 위한 변수
+    private ApiService apiService;
+    private RecyclerView recyclerView;
+    private MemosAdapter adapter;
+    private List<Memo> memoList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main); // activity_main 레이아웃을 사용하여 UI를 구성 (setContentView() 메서드를 사용)
+        setContentView(R.layout.activity_main);
 
-        // RetrofitClient를 사용하여 Retrofit 인스턴스를 호출
-        apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class); // 싱글턴 패턴을 이용하여 인스턴스 생성
+        // Retrofit 클라이언트 인스턴스를 통해 ApiService 인터페이스 구현
+        apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
 
-        // 저장 버튼에 대한 클릭 리스너 설정
+        // RecyclerView 설정
+        recyclerView = findViewById(R.id.memosRecyclerView); // RecyclerView 를 찾아서,
+        recyclerView.setLayoutManager(new LinearLayoutManager(this)); // 세로 방향 리스트로 만들고,
+        adapter = new MemosAdapter(memoList, this); // 사용자가 정의한 MemosAdapter 에 인자로 memoList 를 넘겨서,
+        recyclerView.setAdapter(adapter); // 실제 화면에 표시한다.
+
+        loadMemos();
+
         findViewById(R.id.saveButton).setOnClickListener(v -> {
-            String memo = ((EditText) findViewById(R.id.memoEditText)).getText().toString(); // 메모 입력 필드에서 텍스트를 가져온다.
-            apiService.saveMemo(memo).enqueue(new Callback<Void>() { // ApiService를 통해 서버에 메모 저장 요청, enqueue 메서드를 사용했기에 비동기적으로 처리된다.
+            String memo = ((EditText) findViewById(R.id.memoEditText)).getText().toString();
+            apiService.saveMemo(memo).enqueue(new Callback<Void>() { // enqueue : 비동기적으로 요청을 실행
+
                 @Override
-                public void onResponse(Call<Void> call, Response<Void> response) { // 요청 성공 시 실행
+                public void onResponse(Call<Void> call, Response<Void> response) { // 요청 성공 시
                     if (response.isSuccessful()) {
-                        // 요청이 성공적으로 처리되었을 때만 성공 메시지를 표시
                         Toast.makeText(MainActivity.this, "Memo saved", Toast.LENGTH_SHORT).show();
-                        Log.e("Error", "ㅋㅋㅋㅋ_3 : " + memo);
-                    } else {
-                        // 서버는 응답을 반환했지만, 에러 코드를 포함하는 경우
+                        loadMemos();
+                    } else { // 서버에 요청이 도달했으나, 정상적인 응답을 받지 못했을 때
                         Toast.makeText(MainActivity.this, "Failed to save memo: " + response.code(), Toast.LENGTH_SHORT).show();
-                        Log.e("Error", "ㅋㅋㅋㅋ_1 : " + response.code());
                     }
                 }
 
                 @Override
-                public void onFailure(Call<Void> call, Throwable t) {  // 요청 실패 혹은 네트워크 문제 발생 시 실행
+                public void onFailure(Call<Void> call, Throwable t) { // 서버에 요청을 전송하지도 못했을 때
                     Toast.makeText(MainActivity.this, "Error saving memo", Toast.LENGTH_SHORT).show();
-                    Log.e("Error", "ㅋㅋㅋㅋ_2 : " + t.getMessage()); // 로그에 에러 메시지와 스택 트레이스를 출력
                 }
             });
         });
     }
+
+    private void loadMemos() {
+        apiService.getMemos().enqueue(new Callback<List<Memo>>() { // ApiService를 사용하여 서버로부터 메모 목록을 비동기적으로 불러온다.
+            @Override
+            public void onResponse(Call<List<Memo>> call, Response<List<Memo>> response) {
+                if (response.isSuccessful()) { // 응답 성공 시, 받아온 메모 목록으로 RecyclerView의 데이터를 갱신한다.
+                    List<Memo> memos = response.body(); // 서버로부터 받은 메모 목록
+                    memoList.clear(); // 기존 목록을 지우고
+                    memoList.addAll(memos); // 새로운 목록을 추가한다.
+                    adapter.notifyDataSetChanged(); // 어댑터에 데이터가 변경되었음을 알린다.
+                } else {
+                    // 서버로부터 응답은 받았으나, 요청이 성공적이지 않은 경우
+                    Toast.makeText(MainActivity.this, "Failed to load memos: " + response.code(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Memo>> call, Throwable t) {
+                // 서버로부터 응답조차 받지 못한 경우 (네트워크 문제 등)
+                Toast.makeText(MainActivity.this, "Error loading memos", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
 }
-
-

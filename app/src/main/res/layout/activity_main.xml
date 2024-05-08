@@ -3,21 +3,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/memosRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/saveButton"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        />
+
     <EditText
         android:id="@+id/memoEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/enter_your_memo_here"/>
+        android:hint="@string/enter_your_memo_here" />
 
     <Button
         android:id="@+id/saveButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/memoEditText"
+        android:layout_marginTop="10dp"
         android:layout_marginStart="10dp"
         android:layout_centerHorizontal="true"
         android:text="@string/save_memo" />
-<!--
-android:layout_centerHorizontal="true" // 수평 가운데 배치
--->
+
 </RelativeLayout>
