@@ -6,6 +6,5 @@ import lombok.Setter;
 @Setter
 @Getter
 public class Memo {
-    private int id;
-    private String memo;
+    private String content;
 }

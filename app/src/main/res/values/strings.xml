@@ -2,4 +2,5 @@
     <string name="app_name">ANDROID_CLIENT</string>
     <string name="save_memo">Save Memo</string>
     <string name="enter_your_memo_here">Enter your memo here</string>
+    <string name="Delete_Button_Text">X</string>
 </resources>

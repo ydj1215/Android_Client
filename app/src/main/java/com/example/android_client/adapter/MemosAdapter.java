@@ -38,7 +38,7 @@ public class MemosAdapter extends RecyclerView.Adapter<MemosAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Memo memo = memoList.get(position);
-        holder.memoText.setText(memo.getMemo());
+        holder.memoText.setText(memo.getContent());
 
         holder.deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -53,8 +53,5 @@ dependencies {
     // lombok
     implementation 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
-
-    // SLF4J
-    implementation 'org.slf4j:slf4j-api:1.7.36'
 }
 

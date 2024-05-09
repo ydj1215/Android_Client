@@ -17,12 +17,12 @@ import com.example.android_client.adapter.MemosAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.extern.slf4j.Slf4j;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import android.util.Log;
+import com.google.gson.Gson;
 
-@Slf4j
 public class MainActivity extends AppCompatActivity {
     private ApiService apiService;
     private RecyclerView recyclerView;
@@ -71,8 +71,12 @@ public class MainActivity extends AppCompatActivity {
         apiService.getMemos().enqueue(new Callback<List<Memo>>() { // ApiService를 사용하여 서버로부터 메모 목록을 비동기적으로 불러온다.
             @Override
             public void onResponse(Call<List<Memo>> call, Response<List<Memo>> response) {
+                Gson gson = new Gson(); 
+
                 if (response.isSuccessful()) { // 응답 성공 시, 받아온 메모 목록으로 RecyclerView의 데이터를 갱신한다.
                     List<Memo> memos = response.body(); // 서버로부터 받은 메모 목록
+                    Log.e("ydj", gson.toJson(memos)); // 로깅
+
                     memoList.clear(); // 기존 목록을 지우고
                     memoList.addAll(memos); // 새로운 목록을 추가한다.
                     adapter.notifyDataSetChanged(); // 어댑터에 데이터가 변경되었음을 알린다.
